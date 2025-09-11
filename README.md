@@ -50,15 +50,6 @@ LOCAL_MODEL_DIR = "./your-local-model-directory"  # Path to your saved model
 REPO_ID = "your-username/model-name"              # Hub repository ID
 ```
 
-#### Supported Model Types
-
-The script currently uses `AutoModelForQuestionAnswering`. Modify the import and model loading for other tasks:
-
-- **Text Generation**: `AutoModelForCausalLM`
-- **Text Classification**: `AutoModelForSequenceClassification`
-- **Token Classification**: `AutoModelForTokenClassification`
-- **Other tasks**: See [Transformers documentation](https://huggingface.co/docs/transformers/model_doc/auto)
-
 #### Run
 
 ```bash
