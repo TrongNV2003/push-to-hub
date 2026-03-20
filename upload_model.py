@@ -1,7 +1,9 @@
 import os
 import torch
 from loguru import logger
+from huggingface_hub import HfApi
 from transformers import AutoModel, AutoTokenizer
+
 
 def push_local_model_to_hub(local_model_dir, repo_id, private=True):
     """
@@ -41,12 +43,46 @@ def push_local_model_to_hub(local_model_dir, repo_id, private=True):
             commit_message="Upload tokenizer"
         )
         
-        print("\n✅ Hoàn tất! Mô hình và tokenizer của bạn đã có mặt trên Hugging Face Hub.")
-        print(f"✅ Truy cập tại: https://huggingface.co/{repo_id}")
+        print("\nHoàn tất! Mô hình và tokenizer của bạn đã có mặt trên Hugging Face Hub.")
+        print(f"Truy cập tại: https://huggingface.co/{repo_id}")
         
     except Exception as e:
         logger.error(f"\nĐã xảy ra lỗi trong quá trình đẩy lên Hub: {e}")
         print("Gợi ý: Hãy chắc chắn bạn đã chạy 'huggingface-cli login' và có quyền ghi vào repo.")
+
+
+def push_onnx_folder_to_hub(local_dir: str, repo_id: str, private: bool = True):
+    """
+    Đẩy toàn bộ thư mục chứa model ONNX lên Hugging Face Hub.
+    """
+    if not os.path.exists(local_dir):
+        logger.error(f"Lỗi: Thư mục '{local_dir}' không tồn tại.")
+        return
+
+    api = HfApi()
+
+    logger.info(f"Đang kiểm tra/tạo repository: '{repo_id}'...")
+    try:
+        api.create_repo(repo_id=repo_id, private=private, exist_ok=True)
+        logger.info("Repository đã sẵn sàng.")
+    except Exception as e:
+        logger.error(f"Lỗi khi tạo repo: {e}")
+        return
+
+    logger.info(f"Đang tải thư mục '{local_dir}' lên Hub...")
+    try:
+        api.upload_folder(
+            folder_path=local_dir,
+            repo_id=repo_id,
+            commit_message="Upload ONNX model optimized for FastEmbed"
+        )
+        
+        print("\nHoàn tất! Model ONNX của bạn đã có mặt trên Hugging Face Hub.")
+        print(f"Truy cập tại: https://huggingface.co/{repo_id}")
+        
+    except Exception as e:
+        logger.error(f"\nĐã xảy ra lỗi trong quá trình đẩy lên Hub: {e}")
+        print("Gợi ý: Hãy chắc chắn bạn đã chạy 'huggingface-cli login' bằng token có quyền WRITE.")
 
 
 if __name__ == "__main__":
@@ -55,8 +91,16 @@ if __name__ == "__main__":
 
     logger.warning("Vui lòng đảm bảo bạn đã chạy 'huggingface-cli login' trong terminal trước khi tiếp tục.")
 
-    push_local_model_to_hub(
-        local_model_dir=LOCAL_MODEL_DIR,
+    # pytorch model
+    # push_local_model_to_hub(
+    #     local_model_dir=LOCAL_MODEL_DIR,
+    #     repo_id=REPO_ID,
+    #     private=True
+    # )
+
+    # onnx model
+    push_onnx_folder_to_hub(
+        local_dir=LOCAL_MODEL_DIR,
         repo_id=REPO_ID,
-        private=True
+        private=False
     )
